@@ -8,16 +8,20 @@ import { TimedLambdaStack } from "../lib/generate-stack";
 require("dotenv").config();
 
 const app = new cdk.App();
-new TimedLambdaStack(
-  app,
-  `${process.env.PROJECT_NAME || ""}-stack`,
-  {
-    env: {
-      region: process.env.REGION || "eu-west-1",
+const envEU = { account: "163482350712", region: "eu-west-1" };
+
+const environments = ["production", "staging"];
+
+environments.forEach((env) => {
+  new TimedLambdaStack(
+    app,
+    `${process.env.PROJECT_NAME || ""}-stack-${env}`,
+    {
+      env: envEU,
     },
-  },
-  {
-    projectName: process.env.PROJECT_NAME || "",
-    env: process.env.ENV || "dev",
-  }
-);
+    {
+      projectName: `${process.env.PROJECT_NAME || ""}-stack-${env}`,
+      env: env,
+    }
+  );
+});

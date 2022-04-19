@@ -9,3 +9,6 @@ cdk.out
 
 .env
 cdk-outputs.json
+
+lib/db-config*.json
+!lambda/types.d.ts

@@ -1,4 +1,5 @@
 import { Duration, Stack, StackProps } from "aws-cdk-lib";
+import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { Rule, Schedule } from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
@@ -18,8 +19,13 @@ export class TimedLambdaStack extends Stack {
   ) {
     super(scope, id, props);
 
+    const db =
+      config?.env === "prod"
+        ? require("./db-config-prod.json")
+        : require("./db-config-dev.json");
+
     //Check environment type
-    const isProd = config?.env === "prod";
+    const isProd = config?.env === "production";
 
     // create a role for the lambda
     const lambdaRole = new Role(this, `${config?.projectName}-role`, {
@@ -31,14 +37,21 @@ export class TimedLambdaStack extends Stack {
         },
       ],
     });
+
+    const getExistingVpc = Vpc.fromLookup(this, "ImportVPC", {
+      vpcId: "vpc-3e2dcd5a",
+    });
     // Create a lambda function to process the queue
     const lambda = new NodejsFunction(this, `${config?.projectName}-lambda`, {
-      memorySize: isProd ? 1024 : 512,
       timeout: Duration.seconds(5),
       runtime: Runtime.NODEJS_14_X,
       handler: "main",
       role: lambdaRole,
       entry: path.join(__dirname, `/../lambda/index.ts`),
+      vpc: getExistingVpc,
+      environment: {
+        ...db,
+      },
     });
     const lambdaTarget = new targets.LambdaFunction(lambda);
 
