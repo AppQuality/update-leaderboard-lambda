@@ -1,16 +1,33 @@
-// import * as cdk from 'aws-cdk-lib';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as GenerateReceipt from '../lib/generate-receipt-stack';
+import { main } from "../lambda";
+import getCurrentLeaderboard from "../lambda/getCurrentLeaderboard";
+import getLevels from "../lambda/getLevels";
+import runUpdates from "../lambda/runUpdates";
+import expectedUpdates from "./expectedUpdates";
+import mockLeaderboard from "./mockLeaderboard";
+import mockLevels from "./mockLevels";
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/generate-receipt-stack.ts
-test("SQS Queue Created", () => {
-  //   const app = new cdk.App();
-  //     // WHEN
-  //   const stack = new GenerateReceipt.GenerateReceiptStack(app, 'MyTestStack');
-  //     // THEN
-  //   const template = Template.fromStack(stack);
-  //   template.hasResourceProperties('AWS::SQS::Queue', {
-  //     VisibilityTimeout: 300
-  //   });
+const db = require("../lib/db-config-staging.json");
+
+process.env = {
+  ...db,
+  ...process.env,
+};
+jest.mock("../lambda/runUpdates");
+jest.mock("../lambda/getCurrentLeaderboard");
+jest.mock("../lambda/getLevels");
+let actualUpdates: any[] = [];
+beforeAll(() => {
+  (getCurrentLeaderboard as jest.Mock).mockImplementation(() => {
+    return mockLeaderboard;
+  });
+  (getLevels as jest.Mock).mockImplementation(() => {
+    return mockLevels;
+  });
+  (runUpdates as jest.Mock).mockImplementation((db, updates) => {
+    actualUpdates = updates;
+  });
+});
+test("Correct updates", async () => {
+  await main();
+  expect(actualUpdates).toEqual(expectedUpdates);
 });

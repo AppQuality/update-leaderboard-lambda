@@ -9,6 +9,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
+    "test:watch": "jest --watch",
     "cdk": "cdk",
     "cdk:ls": "cdk --app cdk.out ls",
     "build:lambda": "cd lambda && npm run build",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.92",
     "@types/jest": "^26.0.10",
+    "@types/mysql": "^2.15.21",
     "@types/node": "10.17.27",
     "aws-cdk": "2.13.0",
     "aws-lambda": "^1.0.7",
@@ -35,6 +37,7 @@
     "aws-sdk": "^2.1080.0",
     "constructs": "^10.0.0",
     "dotenv": "^16.0.0",
+    "mysql": "^2.18.1",
     "source-map-support": "^0.5.16"
   }
 }

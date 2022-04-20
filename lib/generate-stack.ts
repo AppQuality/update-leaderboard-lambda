@@ -21,8 +21,8 @@ export class TimedLambdaStack extends Stack {
 
     const db =
       config?.env === "prod"
-        ? require("./db-config-prod.json")
-        : require("./db-config-dev.json");
+        ? require("./db-config-production.json")
+        : require("./db-config-staging.json");
 
     //Check environment type
     const isProd = config?.env === "production";
@@ -34,6 +34,10 @@ export class TimedLambdaStack extends Stack {
         {
           managedPolicyArn:
             "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+        },
+        {
+          managedPolicyArn:
+            "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
         },
       ],
     });
