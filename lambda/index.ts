@@ -1,15 +1,15 @@
+import DB from "./db";
 import getCurrentLeaderboard from "./getCurrentLeaderboard";
 import getLevels from "./getLevels";
 import runUpdates from "./runUpdates";
 
 export async function main(): Promise<{ body: string; statusCode: 200 }> {
-  // const db = new DB({
-  //   host: process.env.DB_HOST || "",
-  //   user: process.env.DB_USER || "",
-  //   password: process.env.DB_PASS || "",
-  //   database: process.env.DB_NAME || "",
-  // });
-  const db = {};
+  const db = new DB({
+    host: process.env.DB_HOST || "",
+    user: process.env.DB_USER || "",
+    password: process.env.DB_PASS || "",
+    database: process.env.DB_NAME || "",
+  });
   const levels = getLevels(db);
   const currentLeaderboard = getCurrentLeaderboard(db);
   const BLACK_MEMBER_ID = 100;
@@ -96,7 +96,7 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
     });
 
   runUpdates(db, updates);
-  //db.destroy();
+  db.destroy();
   return {
     body: JSON.stringify(updates),
     statusCode: 200,

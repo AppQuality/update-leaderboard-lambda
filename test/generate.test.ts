@@ -1,4 +1,5 @@
 import { main } from "../lambda";
+import DB from "../lambda/db";
 import getCurrentLeaderboard from "../lambda/getCurrentLeaderboard";
 import getLevels from "../lambda/getLevels";
 import runUpdates from "../lambda/runUpdates";
@@ -12,6 +13,7 @@ process.env = {
   ...db,
   ...process.env,
 };
+jest.mock("../lambda/db");
 jest.mock("../lambda/runUpdates");
 jest.mock("../lambda/getCurrentLeaderboard");
 jest.mock("../lambda/getLevels");
@@ -25,6 +27,11 @@ beforeAll(() => {
   });
   (runUpdates as jest.Mock).mockImplementation((db, updates) => {
     actualUpdates = updates;
+  });
+  (DB as jest.Mock).mockImplementation(() => {
+    return {
+      destroy: () => {},
+    };
   });
 });
 test("Correct updates", async () => {
