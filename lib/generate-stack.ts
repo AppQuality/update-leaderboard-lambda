@@ -19,13 +19,11 @@ export class TimedLambdaStack extends Stack {
   ) {
     super(scope, id, props);
 
-    const db =
-      config?.env === "prod"
-        ? require("./db-config-production.json")
-        : require("./db-config-staging.json");
-
     //Check environment type
     const isProd = config?.env === "production";
+    const db = isProd
+      ? require("./db-config-production.json")
+      : require("./db-config-staging.json");
 
     // create a role for the lambda
     const lambdaRole = new Role(this, `${config?.projectName}-role`, {
@@ -61,7 +59,12 @@ export class TimedLambdaStack extends Stack {
 
     // Create eventbridge rule with schedule once a day
     const rule = new Rule(this, "ScheduleRule", {
-      schedule: Schedule.rate(Duration.days(1)),
+      schedule: Schedule.cron({
+        minute: "0",
+        hour: "0",
+        day: "1",
+        month: "*",
+      }),
       enabled: true,
       description: "Schedule for timed lambda",
       targets: [lambdaTarget],

@@ -98,7 +98,7 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
   runUpdates(db, updates);
   db.destroy();
   return {
-    body: JSON.stringify(updates),
+    body: JSON.stringify({ message: "Hello world" }),
     statusCode: 200,
   };
 }
