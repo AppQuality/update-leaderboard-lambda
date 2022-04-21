@@ -11,7 +11,7 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
     database: process.env.DB_NAME || "",
   });
   const levels = getLevels(db);
-  const currentLeaderboard = getCurrentLeaderboard(db);
+  const currentLeaderboard = await getCurrentLeaderboard(db);
   const BLACK_MEMBER_ID = 100;
 
   /**
@@ -62,6 +62,7 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
     return {
       tester_id: tester.id,
       level,
+      lastLevel: tester.level,
     };
   }
 
@@ -73,29 +74,32 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
    *
    */
 
-  let updates: ({ tester_id: number; level: number } | null)[] =
-    currentLeaderboard.map((tester) => {
-      if (isTesterBlackMember(tester)) {
-        return levelObject(tester, BLACK_MEMBER_ID);
+  let updates: ({
+    tester_id: number;
+    level: number;
+    lastLevel: number;
+  } | null)[] = currentLeaderboard.map((tester) => {
+    if (isTesterBlackMember(tester)) {
+      return levelObject(tester, BLACK_MEMBER_ID);
+    }
+    const currentLevel = getTesterLevel(tester);
+    if (!currentLevel) {
+      return null;
+    }
+    if (isTesterToDowngrade(tester)) {
+      const previousLevel = previousReachableLevel(tester);
+      if (previousLevel) {
+        return levelObject(tester, previousLevel.id);
       }
-      const currentLevel = getTesterLevel(tester);
-      if (!currentLevel) {
-        return null;
-      }
-      if (isTesterToDowngrade(tester)) {
-        const previousLevel = previousReachableLevel(tester);
-        if (previousLevel) {
-          return levelObject(tester, previousLevel.id);
-        }
-      }
-      let nextLevel = nextReachableLevel(tester);
-      if (nextLevel) {
-        return levelObject(tester, nextLevel.id);
-      }
-      return levelObject(tester, currentLevel.id);
-    });
+    }
+    let nextLevel = nextReachableLevel(tester);
+    if (nextLevel) {
+      return levelObject(tester, nextLevel.id);
+    }
+    return levelObject(tester, currentLevel.id);
+  });
 
-  runUpdates(db, updates);
+  await runUpdates(db, updates);
   db.destroy();
   return {
     body: JSON.stringify({ message: "Hello world" }),

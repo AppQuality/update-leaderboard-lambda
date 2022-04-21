@@ -1,6 +1,6 @@
 import { main } from "../lambda";
 
-const db = require("../lib/db-config-staging.json");
+const db = require("../lib/db-config-local.json");
 
 process.env = {
   ...db,
