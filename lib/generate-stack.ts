@@ -7,7 +7,6 @@ import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as path from "path";
-
 import { StackConfig } from "../interfaces/stack-settings";
 
 export class TimedLambdaStack extends Stack {
@@ -45,7 +44,7 @@ export class TimedLambdaStack extends Stack {
     });
     // Create a lambda function to process the queue
     const lambda = new NodejsFunction(this, `${config?.projectName}-lambda`, {
-      timeout: Duration.seconds(5),
+      timeout: Duration.minutes(5),
       runtime: Runtime.NODEJS_14_X,
       handler: "main",
       role: lambdaRole,
