@@ -20,17 +20,14 @@ export default async (
   });
   for (let level in byLevel) {
     if (byLevel.hasOwnProperty(level)) {
-      console.log(
+      await db.query(
         `
         UPDATE wp_appq_activity_level
-        SET level_id = ${level}
+        SET level_id = ${level}, start_date = NOW()
         WHERE tester_id IN (${byLevel[level].map((id) => `${id}`).join(",")});
       `
       );
     }
   }
-  console.log(upgrades);
-  console.log(downgrades);
-  console.log(byLevel);
   return byLevel;
 };
