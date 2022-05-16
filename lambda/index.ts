@@ -10,7 +10,7 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
     password: process.env.DB_PASS || "",
     database: process.env.DB_NAME || "",
   });
-  const levels = getLevels(db);
+  const levels = await getLevels(db);
   const currentLeaderboard = await getCurrentLeaderboard(db);
   const BLACK_MEMBER_ID = 100;
 

@@ -26,7 +26,14 @@ beforeAll(() => {
     return mockLevels;
   });
   (runUpdates as jest.Mock).mockImplementation((db, updates) => {
-    actualUpdates = updates;
+    actualUpdates = updates.map(
+      (update: { tester_id: number; level: number; lastLevel: number }) => {
+        return {
+          tester_id: update.tester_id,
+          level: update.level,
+        };
+      }
+    );
   });
   (DB as jest.Mock).mockImplementation(() => {
     return {
