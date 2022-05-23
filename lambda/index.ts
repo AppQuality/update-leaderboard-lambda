@@ -1,6 +1,7 @@
 import DB from "./db";
 import getCurrentLeaderboard from "./getCurrentLeaderboard";
 import getLevels from "./getLevels";
+import populatePopups from "./populatePopups";
 import runUpdates from "./runUpdates";
 
 export async function main(): Promise<{ body: string; statusCode: 200 }> {
@@ -73,6 +74,16 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
    *
    *
    */
+  const popups: { [key: string]: number[] } = {
+    downgrade: [],
+    mantain: [],
+  };
+  levels.forEach((level) => {
+    popups[level.display_name] = [];
+  });
+  const legendaryLevel =
+    levels.find((level) => level.id === BLACK_MEMBER_ID)?.display_name ||
+    "Legendary";
 
   let updates: ({
     tester_id: number;
@@ -80,6 +91,9 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
     lastLevel: number;
   } | null)[] = currentLeaderboard.map((tester) => {
     if (isTesterBlackMember(tester)) {
+      if (tester.level !== BLACK_MEMBER_ID) {
+        popups[legendaryLevel].push(tester.id);
+      }
       return levelObject(tester, BLACK_MEMBER_ID);
     }
     const currentLevel = getTesterLevel(tester);
@@ -89,17 +103,21 @@ export async function main(): Promise<{ body: string; statusCode: 200 }> {
     if (isTesterToDowngrade(tester)) {
       const previousLevel = previousReachableLevel(tester);
       if (previousLevel) {
+        popups["downgrade"].push(tester.id);
         return levelObject(tester, previousLevel.id);
       }
     }
     let nextLevel = nextReachableLevel(tester);
     if (nextLevel) {
+      popups[nextLevel.display_name].push(tester.id);
       return levelObject(tester, nextLevel.id);
     }
+    popups["mantain"].push(tester.id);
     return levelObject(tester, currentLevel.id);
   });
 
   await runUpdates(db, updates);
+  await populatePopups(db, popups);
   db.destroy();
   return {
     body: JSON.stringify({ message: "Hello world" }),
